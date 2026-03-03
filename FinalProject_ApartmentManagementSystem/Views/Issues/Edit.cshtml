@@ -1,0 +1,85 @@
+@model FinalProject_ApartmentManagementSystem.ViewModels.IssueProcessViewModel
+@{
+    ViewData["Title"] = "Xu ly su co";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/admin-roles.css" asp-append-version="true" />
+}
+
+<div class="admin-page">
+    <div class="admin-header">
+        <div>
+            <div class="admin-title">Xu ly su co</div>
+            <div class="admin-subtitle">Cap nhat trang thai va phan cong su co.</div>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Index" class="btn-ams btn-ams-outline">
+                <i class="bi bi-arrow-left"></i> Quay lai
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="bi bi-pencil"></i>
+                Cap nhat su co
+            </div>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" method="post" class="form-grid">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <div>
+                    <label class="form-label">Ma su co</label>
+                    <div class="form-input">@Model.IssueCode</div>
+                </div>
+                <div>
+                    <label class="form-label">Tieu de</label>
+                    <div class="form-input">@Model.Title</div>
+                </div>
+                <div>
+                    <label class="form-label">Trang thai</label>
+                    <select asp-for="Status" class="form-input">
+                        @foreach (var option in Model.StatusOptions)
+                        {
+                            <option value="@option">@option</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+                <div>
+                    <label class="form-label">Nguoi xu ly</label>
+                    <select asp-for="AssignedToUserId" class="form-input">
+                        <option value="">-- Chon nhan vien --</option>
+                        @foreach (var option in Model.AssigneeOptions)
+                        {
+                            <option value="@option.UserId">@option.DisplayName (@option.RoleLabel)</option>
+                        }
+                    </select>
+                    <span asp-validation-for="AssignedToUserId" class="text-danger"></span>
+                </div>
+                <div>
+                    <label class="form-label">Ghi chu xu ly</label>
+                    <textarea asp-for="ResolutionNotes" class="form-input" rows="4"></textarea>
+                    <span asp-validation-for="ResolutionNotes" class="text-danger"></span>
+                </div>
+                <div class="admin-actions">
+                    <button type="submit" class="btn-ams btn-ams-primary">
+                        <i class="bi bi-check-circle"></i> Luu
+                    </button>
+                    <a asp-action="Index" class="btn-ams btn-ams-outline">Huy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

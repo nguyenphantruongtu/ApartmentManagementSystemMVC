@@ -1,0 +1,131 @@
+@model FinalProject_ApartmentManagementSystem.ViewModels.ApartmentDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiet can ho";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/admin-roles.css" asp-append-version="true" />
+}
+
+<div class="admin-page">
+    <div class="admin-header">
+        <div>
+            <div class="admin-title">Chi tiet can ho</div>
+            <div class="admin-subtitle">Thong tin can ho va danh sach cu dan.</div>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Index" class="btn-ams btn-ams-outline">
+                <i class="bi bi-arrow-left"></i> Quay lai
+            </a>
+            <a asp-action="AssignResident" asp-route-id="@Model.Id" class="btn-ams btn-ams-primary">
+                <i class="bi bi-person-plus"></i> Gan cu dan
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ApartmentSuccess"] is string message && !string.IsNullOrWhiteSpace(message))
+    {
+        <div class="alert-ams">@message</div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="bi bi-building"></i>
+                Thong tin can ho
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="admin-table">
+                <tbody>
+                    <tr>
+                        <th>Ma can ho</th>
+                        <td>@Model.ApartmentCode</td>
+                        <th>Toa nha</th>
+                        <td>@Model.BuildingName</td>
+                    </tr>
+                    <tr>
+                        <th>Tang</th>
+                        <td>@Model.Floor</td>
+                        <th>So phong</th>
+                        <td>@Model.NumberOfRooms</td>
+                    </tr>
+                    <tr>
+                        <th>Dien tich</th>
+                        <td>@(Model.Area?.ToString("0.##") ?? "-")</td>
+                        <th>Loai</th>
+                        <td>@(Model.ApartmentType ?? "-")</td>
+                    </tr>
+                    <tr>
+                        <th>Trang thai</th>
+                        <td>@Model.Status</td>
+                        <th>Mo ta</th>
+                        <td>@(Model.Description ?? "-")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 18px;">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="bi bi-people"></i>
+                Danh sach cu dan
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model.Residents.Count == 0)
+            {
+                <div class="admin-subtitle">Chua co cu dan nao.</div>
+            }
+            else
+            {
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Cu dan</th>
+                            <th>Chu ho</th>
+                            <th>Ngay vao</th>
+                            <th>Ngay ra</th>
+                            <th>Trang thai</th>
+                            <th>Ghi chu</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var resident in Model.Residents)
+                        {
+                            <tr>
+                                <td>@resident.FullName</td>
+                                <td>@(resident.IsOwner ? "Co" : "Khong")</td>
+                                <td>@resident.MoveInDate.ToString("dd/MM/yyyy")</td>
+                                <td>@(resident.MoveOutDate?.ToString("dd/MM/yyyy") ?? "-")</td>
+                                <td>@(resident.IsActive ? "Dang cu tru" : "Da ket thuc")</td>
+                                <td>@(string.IsNullOrWhiteSpace(resident.Notes) ? "-" : resident.Notes)</td>
+                                <td>
+                                    @if (resident.IsActive)
+                                    {
+                                        <form asp-action="EndResident" method="post" class="admin-actions">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="apartmentResidentId" value="@resident.ApartmentResidentId" />
+                                            <input type="hidden" name="apartmentId" value="@Model.Id" />
+                                            <input type="date" name="moveOutDate" class="form-input" />
+                                            <button type="submit" class="btn-ams btn-ams-danger">
+                                                <i class="bi bi-x-circle"></i> Ket thuc
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

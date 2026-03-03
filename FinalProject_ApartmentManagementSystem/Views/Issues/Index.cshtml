@@ -1,0 +1,162 @@
+@model FinalProject_ApartmentManagementSystem.ViewModels.IssuesIndexViewModel
+@{
+    ViewData["Title"] = "Quan ly su co";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/admin-roles.css" asp-append-version="true" />
+}
+
+<div class="admin-page">
+    <div class="admin-header">
+        <div>
+            <div class="admin-title">Quan ly su co</div>
+            <div class="admin-subtitle">Danh sach su co va trang thai xu ly.</div>
+        </div>
+        <div class="admin-actions">
+            @if (Model.CanCreate)
+            {
+                <a asp-action="Create" class="btn-ams btn-ams-primary">
+                    <i class="bi bi-plus-circle"></i> Bao su co
+                </a>
+            }
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="IssueCategories" asp-action="Index" class="btn-ams btn-ams-outline">
+                    <i class="bi bi-tags"></i> Danh muc
+                </a>
+            }
+        </div>
+    </div>
+
+    @if (TempData["IssueSuccess"] is string success && !string.IsNullOrWhiteSpace(success))
+    {
+        <div class="alert-ams">@success</div>
+    }
+    @if (TempData["IssueError"] is string error && !string.IsNullOrWhiteSpace(error))
+    {
+        <div class="alert-ams">@error</div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="bi bi-tools"></i>
+                Bo loc su co
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-grid">
+                <div>
+                    <label class="form-label">Trang thai</label>
+                    <select name="status" class="form-input">
+                        <option value="">Tat ca</option>
+                        @foreach (var option in Model.StatusOptions)
+                        {
+                            <option value="@option" selected="@(Model.StatusFilter == option)">
+                                @option
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Danh muc</label>
+                    <select name="categoryId" class="form-input">
+                        <option value="">Tat ca</option>
+                        @foreach (var option in Model.CategoryOptions)
+                        {
+                            <option value="@option.CategoryId" selected="@(Model.CategoryFilter == option.CategoryId)">
+                                @option.CategoryName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Uu tien</label>
+                    <select name="priority" class="form-input">
+                        <option value="">Tat ca</option>
+                        @for (var p = 1; p <= 5; p++)
+                        {
+                            <option value="@p" selected="@(Model.PriorityFilter == p)">@p</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Tim kiem</label>
+                    <input name="search" class="form-input" value="@Model.Search" placeholder="Ma su co / Tieu de" />
+                </div>
+                <div class="admin-actions">
+                    <button type="submit" class="btn-ams btn-ams-primary">
+                        <i class="bi bi-funnel"></i> Loc
+                    </button>
+                    <a asp-action="Index" class="btn-ams btn-ams-outline">Xoa loc</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="bi bi-list-check"></i>
+                Danh sach su co
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model.Issues.Count == 0)
+            {
+                <div class="admin-subtitle">Chua co su co nao.</div>
+            }
+            else
+            {
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Ma su co</th>
+                            <th>Tieu de</th>
+                            <th>Danh muc</th>
+                            <th>Can ho</th>
+                            <th>Uu tien</th>
+                            <th>Trang thai</th>
+                            <th>Da bao</th>
+                            <th>Nguoi xu ly</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var issue in Model.Issues)
+                        {
+                            <tr>
+                                <td>@issue.IssueCode</td>
+                                <td>@issue.Title</td>
+                                <td>@issue.CategoryName</td>
+                                <td>@issue.ApartmentCode</td>
+                                <td>@issue.Priority</td>
+                                <td>@issue.Status</td>
+                                <td>@issue.ReportedByName</td>
+                                <td>@(string.IsNullOrWhiteSpace(issue.AssignedToName) ? "-" : issue.AssignedToName)</td>
+                                <td>
+                                    <div class="admin-actions">
+                                        <a asp-action="Details" asp-route-id="@issue.Id" class="btn-ams btn-ams-outline">
+                                            <i class="bi bi-eye"></i> Chi tiet
+                                        </a>
+                                        @if (Model.CanManage)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@issue.Id" class="btn-ams btn-ams-outline">
+                                                <i class="bi bi-pencil"></i> Xu ly
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

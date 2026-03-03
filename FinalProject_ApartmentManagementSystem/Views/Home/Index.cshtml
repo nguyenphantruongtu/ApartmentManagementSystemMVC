@@ -1,0 +1,1132 @@
+@model FinalProject_ApartmentManagementSystem.ViewModels.HomePageViewModel
+@{
+    ViewData["Title"] = "Trang chu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var nameParts = Model.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var displayName = nameParts.Length > 0 ? nameParts[nameParts.Length - 1] : Model.FullName;
+    var isAdmin = User.IsInRole("Admin");
+    var isStaff = User.IsInRole("Staff");
+    var isResident = User.IsInRole("Resident");
+    var canManageProperties = isAdmin;
+    var canManageInvoices = isAdmin || isStaff;
+    var canViewInvoices = canManageInvoices || isResident;
+    var canManageIssues = isAdmin || isStaff;
+    var canCreateIssues = isResident;
+    var roleLabel = isAdmin ? "Quan tri" : isStaff ? "Nhan vien" : "Cu dan";
+}
+
+@section Styles {
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+/* Force homepage to use full viewport width inside shared layout */
+.container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+main.pb-3 {
+    padding-bottom: 0 !important;
+}
+
+:root {
+    --blue-900 : #0A1628;
+    --blue-800 : #0D2144;
+    --blue-600 : #1045A0;
+    --blue-500 : #1565C0;
+    --blue-400 : #2979D4;
+    --blue-200 : #90CAF9;
+    --blue-50  : #E3F2FD;
+    --cyan-400 : #26C6DA;
+    --cyan-300 : #4DD0E1;
+    --red-500  : #E53935;
+    --red-50   : #FFEBEE;
+    --green-500: #43A047;
+    --green-50 : #E8F5E9;
+    --amber-500: #FB8C00;
+    --amber-50 : #FFF3E0;
+    --surface-0: #F0F4FA;
+    --surface-1: #FFFFFF;
+    --surface-2: #F7F9FC;
+    --border   : #E4EAF4;
+    --text-h   : #0A1628;
+    --text-b   : #2D3F5C;
+    --text-s   : #6B7FA8;
+    --r-sm : 10px;
+    --r-md : 16px;
+    --r-lg : 22px;
+    --shadow-xs: 0 1px 4px rgba(10,22,40,.06);
+    --shadow-sm: 0 2px 10px rgba(10,22,40,.08);
+    --shadow-md: 0 6px 24px rgba(16,69,160,.12);
+    --shadow-lg: 0 12px 40px rgba(16,69,160,.18);
+    --sidebar-w: 240px;
+    --topbar-h : 64px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family : 'Be Vietnam Pro', sans-serif;
+    background  : var(--surface-0);
+    color       : var(--text-b);
+    font-size   : 14px;
+    min-height  : 100vh;
+}
+h1,h2,h3,h4,h5,h6,.font-display { font-family: 'Outfit', sans-serif; }
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; }
+
+.shell { display: flex; height: 100vh; overflow: hidden; }
+.sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: var(--blue-900);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+    transition: width .3s ease;
+    z-index: 200;
+}
+.sidebar::-webkit-scrollbar { display: none; }
+.sidebar-logo {
+    padding: 22px 20px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    flex-shrink: 0;
+}
+.logo-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--blue-400), var(--cyan-400));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+.logo-text { font-family: 'Outfit', sans-serif; font-size: .95rem; font-weight: 700; color: #fff; line-height: 1.2; }
+.logo-sub { font-size: .65rem; color: rgba(255,255,255,.4); font-weight: 400; }
+.nav-label {
+    font-size: .65rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.3);
+    padding: 18px 20px 6px;
+}
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    margin: 1px 8px;
+    border-radius: var(--r-sm);
+    color: rgba(255,255,255,.55);
+    font-size: .83rem;
+    font-weight: 500;
+    transition: background .15s, color .15s;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.nav-item i { font-size: 1rem; flex-shrink: 0; width: 20px; text-align: center; }
+.nav-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.9); }
+.nav-item.active {
+    background: linear-gradient(90deg, rgba(41,121,212,.35), rgba(41,121,212,.12));
+    color: #fff;
+    border-left: 2px solid var(--cyan-400);
+    padding-left: 18px;
+}
+.nav-badge {
+    margin-left: auto;
+    background: var(--cyan-400);
+    color: var(--blue-900);
+    font-size: .6rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 20px;
+    flex-shrink: 0;
+}
+.sidebar-footer {
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,.07);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.sf-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,.2);
+}
+.sf-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sf-name { font-size: .8rem; font-weight: 600; color: rgba(255,255,255,.85); }
+.sf-role { font-size: .65rem; color: rgba(255,255,255,.35); }
+.sf-logout {
+    margin-left: auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.07);
+    border: none;
+    color: rgba(255,255,255,.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .85rem;
+    flex-shrink: 0;
+    transition: background .15s, color .15s;
+}
+.sf-logout:hover { background: rgba(229,57,53,.25); color: #EF9A9A; }
+
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.topbar {
+    height: var(--topbar-h);
+    flex-shrink: 0;
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 16px;
+    box-shadow: var(--shadow-xs);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.topbar-title { font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--text-h); }
+.topbar-sub { font-size: .75rem; color: var(--text-s); margin-top: 1px; }
+.topbar-search { margin-left: auto; position: relative; width: 240px; }
+.topbar-search input {
+    width: 100%;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0 14px 0 36px;
+    font-size: .8rem;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background: var(--surface-0);
+    color: var(--text-b);
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+}
+.topbar-search input:focus {
+    border-color: var(--blue-400);
+    box-shadow: 0 0 0 3px rgba(41,121,212,.12);
+}
+.topbar-search i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-s);
+    font-size: .85rem;
+    pointer-events: none;
+}
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.topbar-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-s);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .95rem;
+    transition: border-color .2s, color .2s, background .2s;
+    position: relative;
+}
+.topbar-btn:hover { border-color: var(--blue-400); color: var(--blue-500); background: var(--blue-50); }
+.topbar-btn .badge-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--red-500);
+    border: 2px solid var(--surface-1);
+}
+.topbar-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: border-color .2s;
+}
+.topbar-avatar:hover { border-color: var(--blue-400); }
+.topbar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.page-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+.page-body::-webkit-scrollbar { width: 5px; }
+.page-body::-webkit-scrollbar-track { background: transparent; }
+.page-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.hero {
+    border-radius: var(--r-lg);
+    background: linear-gradient(120deg, var(--blue-800) 0%, var(--blue-600) 50%, #1976D2 100%);
+    padding: 32px 36px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    box-shadow: var(--shadow-lg);
+}
+.hero::before {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    border: 60px solid rgba(255,255,255,.04);
+    right: -80px;
+    top: -120px;
+    pointer-events: none;
+}
+.hero::after {
+    content: '';
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 30px solid rgba(255,255,255,.05);
+    right: 200px;
+    bottom: -60px;
+    pointer-events: none;
+}
+.hero-left { position: relative; z-index: 1; }
+.hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: .72rem;
+    color: rgba(255,255,255,.9);
+    margin-bottom: 14px;
+    backdrop-filter: blur(4px);
+}
+.hero-greeting {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 6px;
+}
+.hero-greeting span { color: var(--cyan-300); }
+.hero-sub { font-size: .85rem; color: rgba(255,255,255,.65); margin-bottom: 22px; }
+.apt-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: var(--r-md);
+    padding: 10px 16px;
+    backdrop-filter: blur(8px);
+}
+.apt-pill-code { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; color: #fff; }
+.apt-pill-loc { font-size: .72rem; color: rgba(255,255,255,.6); margin-top: 1px; }
+.apt-pill-divider { width: 1px; height: 30px; background: rgba(255,255,255,.2); }
+.hero-stats { display: flex; gap: 14px; position: relative; z-index: 1; flex-shrink: 0; }
+.hero-stat {
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: var(--r-md);
+    padding: 18px 22px;
+    min-width: 160px;
+    backdrop-filter: blur(8px);
+    transition: background .2s;
+    text-decoration: none;
+    display: block;
+}
+.hero-stat:hover { background: rgba(255,255,255,.17); }
+.hero-stat-label {
+    font-size: .72rem;
+    color: rgba(255,255,255,.65);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+.hero-stat-label i { font-size: .8rem; }
+.hero-stat-value { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700; color: #fff; line-height: 1; }
+.hero-stat-value.is-due { color: #FF8A80; }
+.hero-stat-footer { font-size: .68rem; color: rgba(255,255,255,.45); margin-top: 5px; }
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 340px;
+    grid-template-rows: auto auto;
+    gap: 20px;
+}
+.area-quick { grid-column: 1 / -1; }
+.area-notif { grid-column: 4; grid-row: 2 / 4; }
+.area-stats { grid-column: 1 / 4; }
+.area-banner { grid-column: 1 / 4; }
+
+.card {
+    background: var(--surface-1);
+    border-radius: var(--r-md);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-xs);
+    overflow: hidden;
+}
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+}
+.card-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: .93rem;
+    font-weight: 700;
+    color: var(--text-h);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.card-title i { color: var(--blue-500); font-size: .9rem; }
+.card-more {
+    font-size: .75rem;
+    color: var(--blue-500);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    transition: gap .15s;
+}
+.card-more:hover { gap: 6px; }
+.card-body { padding: 18px 20px; }
+
+.quick-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.quick-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 12px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--text-b);
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    box-shadow: var(--shadow-xs);
+}
+.quick-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--blue-200);
+    color: var(--blue-600);
+}
+.quick-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: transform .15s;
+}
+.quick-item:hover .quick-icon { transform: scale(1.1); }
+.quick-label { font-size: .75rem; font-weight: 600; text-align: center; line-height: 1.3; }
+.qi-blue { background: var(--blue-50); color: var(--blue-500); }
+.qi-indigo { background: #EDE7F6; color: #5E35B1; }
+.qi-teal { background: #E0F7FA; color: #00838F; }
+.qi-orange { background: var(--amber-50); color: var(--amber-500); }
+.qi-green { background: var(--green-50); color: var(--green-500); }
+.qi-red { background: var(--red-50); color: var(--red-500); }
+
+.stat-row-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.stat-tile {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow .15s, transform .15s;
+    text-decoration: none;
+    color: inherit;
+}
+.stat-tile:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.stat-tile-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+.stat-tile-label { font-size: .75rem; color: var(--text-s); margin-bottom: 4px; }
+.stat-tile-value { font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--text-h); line-height: 1; }
+.stat-tile-sub { font-size: .7rem; color: var(--text-s); margin-top: 4px; }
+.stat-tile-trend {
+    margin-left: auto;
+    font-size: .72rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.trend-up { color: var(--green-500); }
+.trend-down { color: var(--red-500); }
+
+.banner-wrap { border-radius: var(--r-md); overflow: hidden; position: relative; }
+.banner-slide-img { width: 100%; height: 200px; object-fit: cover; display: block; }
+.banner-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(10,22,40,.8) 0%, transparent 100%);
+    padding: 40px 24px 20px;
+}
+.banner-title { font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.banner-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: .72rem;
+    color: #fff;
+    backdrop-filter: blur(4px);
+    transition: background .2s;
+}
+.banner-cta:hover { background: rgba(255,255,255,.25); }
+.carousel-ctrl {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.9);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .85rem;
+    color: var(--blue-600);
+    box-shadow: var(--shadow-sm);
+    transition: background .2s, transform .2s;
+    z-index: 10;
+}
+.carousel-ctrl:hover { background: #fff; transform: translateY(-50%) scale(1.08); }
+.carousel-ctrl.prev { left: 12px; }
+.carousel-ctrl.next { right: 12px; }
+.banner-dots { display: flex; justify-content: center; gap: 5px; padding: 10px 0 4px; }
+.banner-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background .2s, width .2s;
+}
+.banner-dot.active { width: 20px; border-radius: 3px; background: var(--blue-500); }
+
+.notif-panel { height: 100%; display: flex; flex-direction: column; }
+.notif-tabs { display: flex; gap: 4px; padding: 0 16px 12px; }
+.notif-tab {
+    flex: 1;
+    padding: 6px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-size: .75rem;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 500;
+    color: var(--text-s);
+    transition: background .15s, color .15s;
+}
+.notif-tab.active { background: var(--blue-50); color: var(--blue-600); font-weight: 600; }
+.notif-tab:hover:not(.active) { background: var(--surface-0); }
+.notif-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px 16px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.notif-card {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .15s, box-shadow .15s;
+    position: relative;
+    cursor: pointer;
+}
+.notif-card:hover { border-color: var(--blue-200); box-shadow: var(--shadow-sm); }
+.notif-card.unread { background: linear-gradient(to right, rgba(41,121,212,.04), transparent); border-color: rgba(41,121,212,.25); }
+.notif-card.unread .notif-card-title { font-weight: 600; }
+.unread-pip {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--blue-500);
+}
+.nc-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .85rem;
+    flex-shrink: 0;
+}
+.nc-icon.danger { background: var(--red-50); color: #C62828; }
+.nc-icon.warning { background: var(--amber-50); color: #E65100; }
+.nc-icon.success { background: var(--green-50); color: #2E7D32; }
+.nc-icon.primary { background: var(--blue-50); color: var(--blue-600); }
+.notif-card-title { font-size: .8rem; color: var(--text-h); line-height: 1.3; margin-bottom: 2px; }
+.notif-card-body {
+    font-size: .71rem;
+    color: var(--text-s);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.notif-card-time { font-size: .67rem; color: #B0BEC5; margin-top: 5px; }
+
+@@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate { opacity: 0; animation: fadeUp .4s ease forwards; }
+.delay-1 { animation-delay: .05s; }
+.delay-2 { animation-delay: .10s; }
+.delay-3 { animation-delay: .15s; }
+.delay-4 { animation-delay: .20s; }
+.delay-5 { animation-delay: .25s; }
+
+@@media (max-width: 1280px) {
+    .dashboard-grid { grid-template-columns: 1fr 1fr 340px; }
+    .area-stats { grid-column: 1 / 3; }
+    .area-banner { grid-column: 1 / 3; }
+    .quick-grid { grid-template-columns: repeat(3,1fr); }
+}
+@@media (max-width: 1024px) {
+    :root { --sidebar-w: 200px; }
+    .dashboard-grid { grid-template-columns: 1fr 1fr; }
+    .area-notif { grid-column: 1 / -1; grid-row: auto; }
+    .area-stats { grid-column: 1 / -1; }
+    .area-banner { grid-column: 1 / -1; }
+    .hero-stats { display: none; }
+}
+@@media (max-width: 768px) {
+    .sidebar { display: none; }
+    .page-body { padding: 16px; }
+    .hero { padding: 22px 20px; }
+    .dashboard-grid { grid-template-columns: 1fr; gap: 14px; }
+    .quick-grid { grid-template-columns: repeat(3,1fr); }
+    .stat-row-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+}
+
+<div class="shell">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon"><i class="bi bi-buildings"></i></div>
+            <div>
+                <div class="logo-text">S-TECH</div>
+                <div class="logo-sub">Building Management</div>
+            </div>
+        </div>
+
+        <div class="nav-label">Tong quan</div>
+        <a asp-controller="Home" asp-action="Index" class="nav-item active">
+            <i class="bi bi-house-fill"></i> Trang chủ
+        </a>
+        <a asp-controller="Account" asp-action="Profile" class="nav-item">
+            <i class="bi bi-person"></i> Hồ sơ cá nhân
+        </a>
+
+        @if (canManageProperties)
+        {
+            <div class="nav-label">Quản lý</div>
+            <a asp-controller="Apartments" asp-action="Index" class="nav-item">
+                <i class="bi bi-building"></i> Căn hộ
+            </a>
+            <a asp-controller="Residents" asp-action="Index" class="nav-item">
+                <i class="bi bi-people"></i> Cư dân
+            </a>
+        }
+
+        <div class="nav-label">Tài chính</div>
+        @if (canManageInvoices)
+        {
+            <a asp-controller="FeeTypes" asp-action="Index" class="nav-item">
+                <i class="bi bi-tags"></i>Loại phí
+            </a>
+        }
+        @if (canViewInvoices)
+        {
+            <a asp-controller="Invoices" asp-action="Index" class="nav-item">
+                <i class="bi bi-receipt"></i> Hóa đơn
+                @if (Model.AmountDue > 0)
+                {
+                    <span class="nav-badge">!</span>
+                }
+            </a>
+        }
+        @if (isResident)
+        {
+            <a asp-controller="Payments" asp-action="Index" class="nav-item">
+                <i class="bi bi-credit-card"></i> Thanh toán
+            </a>
+        }
+
+        <div class="nav-label">Hỗ trợ</div>
+        @if (canManageIssues || canCreateIssues)
+        {
+            <a asp-controller="Issues" asp-action="Index" class="nav-item">
+                <i class="bi bi-tools"></i> Sự cố & Báo hỏng
+            </a>
+        }
+        <a asp-controller="Notifications" asp-action="Index" class="nav-item">
+            <i class="bi bi-bell"></i> Thông báo
+            @if (Model.UnreadNotificationCount > 0)
+            {
+                <span class="nav-badge">@Model.UnreadNotificationCount</span>
+            }
+        </a>
+
+        <div class="sidebar-footer">
+            <a asp-controller="Account" asp-action="Profile" class="sf-avatar">
+                <img src="@Model.AvatarUrl" alt="avatar" onerror="this.src='/images/default-avatar.png'">
+            </a>
+            <div>
+                <div class="sf-name">@Model.FullName</div>
+                <div class="sf-role">@roleLabel</div>
+            </div>
+            <form asp-controller="Account"
+                  asp-action="Logout"
+                  method="post"
+                  class="sf-logout d-inline"
+                  title="Đăng xuất">
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="btn btn-link p-0 border-0">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <div class="main">
+        <header class="topbar">
+            <div>
+                <div class="topbar-title">Xin chào, @Model.FullName 👋</div>
+                <div class="topbar-sub">
+                    @DateTime.Now.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                </div>
+            </div>
+
+            <div class="topbar-search">
+                <i class="bi bi-search"></i>
+                <input type="search" placeholder="Tìm kiếm...">
+            </div>
+
+            <div class="topbar-actions">
+                <button class="topbar-btn" title="QR Code">
+                    <i class="bi bi-qr-code-scan"></i>
+                </button>
+                <a asp-controller="Notifications" asp-action="Index" class="topbar-btn" title="Thông báo">
+                    <i class="bi bi-bell"></i>
+                    @if (Model.UnreadNotificationCount > 0)
+                    {
+                        <span class="badge-dot"></span>
+                    }
+                </a>
+                <a asp-controller="Account" asp-action="Profile" class="topbar-avatar">
+                    <img src="@Model.AvatarUrl" alt="avatar" onerror="this.src='/images/default-avatar.png'">
+                </a>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <div class="hero animate">
+                <div class="hero-left">
+                    <div class="hero-tag">
+                        <i class="bi bi-shield-check"></i>
+                        Căn hộ đang hoạt động
+                    </div>
+                    <div class="hero-greeting">
+                        Chào mừng trở lại,<br>
+                        <span>@displayName</span>
+                    </div>
+                    @if (Model.ApartmentInfo is not null)
+                    {
+                        <div class="hero-sub">
+                            Quản lý căn hộ của bạn tại @Model.ApartmentInfo.BuildingName
+                        </div>
+                        <div class="apt-pill">
+                            <div>
+                                <div class="apt-pill-code">@Model.ApartmentInfo.ApartmentCode</div>
+                                <div class="apt-pill-loc">@Model.ApartmentInfo.Floor</div>
+                            </div>
+                            <div class="apt-pill-divider"></div>
+                            <div>
+                                <div class="apt-pill-loc">Tòa nhà</div>
+                                <div style="font-size:.82rem;font-weight:600;color:#fff;">
+                                    @Model.ApartmentInfo.BuildingName
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="hero-stat-label">
+                            <i class="bi bi-wallet2"></i> Số dư cư dân
+                        </div>
+                        <div class="hero-stat-value">
+                            @Model.WalletBalance.ToString("#,##0")d
+                        </div>
+                        <div class="hero-stat-footer">Cập nhật hôm nay</div>
+                    </div>
+                    <a asp-controller="Invoices" asp-action="Index" class="hero-stat">
+                        <div class="hero-stat-label">
+                            <i class="bi bi-receipt"></i> Phí cần thanh toán
+                        </div>
+                        <div class="hero-stat-value is-due">
+                            @Model.AmountDue.ToString("#,##0")d
+                        </div>
+                        <div class="hero-stat-footer">
+                            Nhấn để xem hóa đơn ->
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="area-quick animate delay-1">
+                    <div class="quick-grid">
+                        @if (canManageInvoices)
+                        {
+                            <a asp-controller="FeeTypes" asp-action="Index" class="quick-item">
+                                <div class="quick-icon qi-indigo"><i class="bi bi-tags"></i></div>
+                                <span class="quick-label">Quản lý loại phí</span>
+                            </a>
+                        }
+                        @if (canViewInvoices)
+                        {
+                            <a asp-controller="Invoices" asp-action="Index" class="quick-item">
+                                <div class="quick-icon qi-blue"><i class="bi bi-receipt-cutoff"></i></div>
+                                <span class="quick-label">Xem hóa đơn</span>
+                            </a>
+                        }
+                        @if (isResident)
+                        {
+                            <a asp-controller="Payments" asp-action="Create" class="quick-item">
+                                <div class="quick-icon qi-green"><i class="bi bi-credit-card"></i></div>
+                                <span class="quick-label">Thanh toán</span>
+                            </a>
+                        }
+                        @if (canCreateIssues)
+                        {
+                            <a asp-controller="Issues" asp-action="Create" class="quick-item">
+                                <div class="quick-icon qi-orange"><i class="bi bi-tools"></i></div>
+                                <span class="quick-label">Báo cáo sự cố</span>
+                            </a>
+                        }
+                        @if (isResident)
+                        {
+                            <a asp-controller="Services" asp-action="Index" class="quick-item">
+                                <div class="quick-icon qi-indigo"><i class="bi bi-grid-3x3-gap"></i></div>
+                                <span class="quick-label">Phí dịch vụ</span>
+                            </a>
+                            <a asp-controller="Amenities" asp-action="Index" class="quick-item">
+                                <div class="quick-icon qi-teal"><i class="bi bi-bookmark-star"></i></div>
+                                <span class="quick-label">Đặt tiện ích</span>
+                            </a>
+                        }
+                        <a asp-controller="Profile" asp-action="Edit" class="quick-item">
+                            <div class="quick-icon qi-red"><i class="bi bi-person-gear"></i></div>
+                            <span class="quick-label">Cập nhật hồ sơ</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="area-stats animate delay-2">
+                    <div class="stat-row-grid">
+                        @if (canViewInvoices)
+                        {
+                            <a asp-controller="Invoices" asp-action="Index" asp-route-status="Unpaid" class="stat-tile">
+                                <div class="stat-tile-icon qi-blue">
+                                    <i class="bi bi-file-earmark-text"></i>
+                                </div>
+                                <div style="flex:1; min-width:0;">
+                                    <div class="stat-tile-label">Hóa đơn chưa thanh toán</div>
+                                    <div class="stat-tile-value">2</div>
+                                    <div class="stat-tile-sub">tháng này</div>
+                                </div>
+                                <div class="stat-tile-trend trend-down">
+                                    <i class="bi bi-arrow-up-right"></i> 2
+                                </div>
+                            </a>
+                        }
+
+                        @if (canManageIssues || canCreateIssues)
+                        {
+                            <a asp-controller="Issues" asp-action="Index" asp-route-status="Open" class="stat-tile">
+                                <div class="stat-tile-icon qi-orange">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </div>
+                                <div style="flex:1; min-width:0;">
+                                    <div class="stat-tile-label">Sự cố đang xử lý</div>
+                                    <div class="stat-tile-value">1</div>
+                                    <div class="stat-tile-sub">đang chờ phản hồi</div>
+                                </div>
+                                <div class="stat-tile-trend trend-up">
+                                    <i class="bi bi-arrow-down-right"></i> 1
+                                </div>
+                            </a>
+                        }
+
+                        @if (isResident)
+                        {
+                            <a asp-controller="Payments" asp-action="Index" class="stat-tile">
+                                <div class="stat-tile-icon qi-green">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div style="flex:1; min-width:0;">
+                                    <div class="stat-tile-label">Đã thanh toán</div>
+                                    <div class="stat-tile-value">3</div>
+                                    <div class="stat-tile-sub">trong 3 tháng qua</div>
+                                </div>
+                                <div class="stat-tile-trend trend-up">
+                                    <i class="bi bi-arrow-up-right"></i> 1
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.Announcements.Count > 0)
+                {
+                    <div class="area-banner animate delay-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="card-title">
+                                    <i class="bi bi-megaphone"></i>
+                                    Thông báo của BQL
+                                </span>
+                                <a asp-controller="Bulletin" asp-action="Index" class="card-more">
+                                    Xem tat ca <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                            <div class="card-body" style="padding-bottom:14px;">
+                                <div class="banner-wrap">
+                                    <div id="webCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+                                        <div class="carousel-inner">
+                                            @for (int i = 0; i < Model.Announcements.Count; i++)
+                                            {
+                                                var ann = Model.Announcements[i];
+                                                <div class="carousel-item @(i == 0 ? "active" : "")">
+                                                    <a href="@ann.LinkUrl" class="d-block position-relative">
+                                                        <img src="@ann.ImageUrl" alt="@ann.Title" class="banner-slide-img" onerror="this.style.display='none'">
+                                                        <div class="banner-content">
+                                                            <div class="banner-title">@ann.Title</div>
+                                                            <span class="banner-cta">
+                                                                Xem chi tiet
+                                                                <i class="bi bi-arrow-right"></i>
+                                                            </span>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            }
+                                        </div>
+                                        @if (Model.Announcements.Count > 1)
+                                        {
+                                            <button class="carousel-ctrl prev" data-bs-target="#webCarousel" data-bs-slide="prev">
+                                                <i class="bi bi-chevron-left"></i>
+                                            </button>
+                                            <button class="carousel-ctrl next" data-bs-target="#webCarousel" data-bs-slide="next">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                    <div class="banner-dots">
+                                        @for (int i = 0; i < Model.Announcements.Count; i++)
+                                        {
+                                            <button class="banner-dot @(i == 0 ? "active" : "")" data-slide="@i" type="button" aria-label="Slide @(i + 1)"></button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="area-notif animate delay-4">
+                    <div class="card" style="height:100%;">
+                        <div class="card-header">
+                            <span class="card-title">
+                                <i class="bi bi-bell"></i>
+                                Thong bao
+                                @if (Model.UnreadNotificationCount > 0)
+                                {
+                                    <span style="background:var(--blue-500);color:#fff;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:20px;">
+                                        @Model.UnreadNotificationCount
+                                    </span>
+                                }
+                            </span>
+                            <a asp-controller="Notifications" asp-action="Index" class="card-more">
+                                Tat ca <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+
+                        <div class="notif-panel">
+                            <div class="notif-tabs" style="margin-top:12px;">
+                                <button class="notif-tab active">Chưa đọc/button>
+                                <button class="notif-tab">Tất cả</button>
+                            </div>
+
+                            <div class="notif-scroll">
+                                @if (Model.RecentNotifications.Count > 0)
+                                {
+                                    @foreach (var n in Model.RecentNotifications)
+                                    {
+                                        <a asp-controller="Notifications"
+                                           asp-action="Detail"
+                                           asp-route-id="@n.Id"
+                                           class="notif-card @(n.IsRead ? "" : "unread")"
+                                           data-notif-id="@n.Id">
+                                            @if (!n.IsRead)
+                                            {
+                                                <span class="unread-pip"></span>
+                                            }
+                                            <div class="nc-icon @n.BadgeClass">
+                                                <i class="@n.IconClass"></i>
+                                            </div>
+                                            <div style="min-width:0;flex:1;">
+                                                <div class="notif-card-title">@n.Title</div>
+                                                <div class="notif-card-body">@n.Content</div>
+                                                <div class="notif-card-time">
+                                                    <i class="bi bi-clock me-1"></i>@n.TimeAgo
+                                                </div>
+                                            </div>
+                                        </a>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="text-center py-4" style="color:var(--text-s);">
+                                        <i class="bi bi-bell-slash" style="font-size:1.8rem;opacity:.3;display:block;margin-bottom:8px;"></i>
+                                        <span style="font-size:.8rem;">Không có thông báo mới</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    'use strict';
+
+    const carEl = document.getElementById('webCarousel');
+    const dots = document.querySelectorAll('.banner-dot');
+
+    if (carEl && dots.length) {
+        carEl.addEventListener('slid.bs.carousel', e => {
+            dots.forEach((d, i) => d.classList.toggle('active', i === e.to));
+        });
+
+        dots.forEach(d => d.addEventListener('click', function () {
+            bootstrap.Carousel.getOrCreateInstance(carEl).to(+this.dataset.slide);
+        }));
+    }
+
+    const tabs = document.querySelectorAll('.notif-tab');
+    const notifAll = document.querySelectorAll('.notif-card');
+
+    tabs.forEach((tab, idx) => {
+        tab.addEventListener('click', function () {
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            notifAll.forEach(card => {
+                card.style.display = (idx === 0 && !card.classList.contains('unread')) ? 'none' : 'flex';
+            });
+        });
+    });
+
+    notifAll.forEach(el => {
+        if (!el.classList.contains('unread')) return;
+        el.addEventListener('click', function () {
+            const id = this.dataset.notifId;
+            if (id) navigator.sendBeacon(`/Notifications/MarkRead/${id}`);
+        });
+    });
+})();
+</script>
+}

@@ -1,0 +1,95 @@
+@model FinalProject_ApartmentManagementSystem.ViewModels.ResidentDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiet cu dan";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/admin-roles.css" asp-append-version="true" />
+}
+
+<div class="admin-page">
+    <div class="admin-header">
+        <div>
+            <div class="admin-title">Chi tiet cu dan</div>
+            <div class="admin-subtitle">Thong tin chi tiet ve cu dan.</div>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Index" class="btn-ams btn-ams-outline">
+                <i class="bi bi-arrow-left"></i> Quay lai
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-ams btn-ams-primary">
+                <i class="bi bi-pencil"></i> Sua
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="bi bi-person"></i>
+                Thong tin cu dan
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="admin-table">
+                <tbody>
+                    <tr>
+                        <th>Ho ten</th>
+                        <td>@Model.FullName</td>
+                        <th>Ngay sinh</th>
+                        <td>@(Model.DateOfBirth?.ToString("dd/MM/yyyy") ?? "-")</td>
+                    </tr>
+                    <tr>
+                        <th>Gioi tinh</th>
+                        <td>@(string.IsNullOrWhiteSpace(Model.Gender) ? "-" : Model.Gender)</td>
+                        <th>CCCD</th>
+                        <td>@(string.IsNullOrWhiteSpace(Model.CitizenId) ? "-" : Model.CitizenId)</td>
+                    </tr>
+                    <tr>
+                        <th>Dien thoai</th>
+                        <td>@(string.IsNullOrWhiteSpace(Model.Phone) ? "-" : Model.Phone)</td>
+                        <th>Email</th>
+                        <td>@(string.IsNullOrWhiteSpace(Model.Email) ? "-" : Model.Email)</td>
+                    </tr>
+                    <tr>
+                        <th>Lien he khan cap</th>
+                        <td>@(string.IsNullOrWhiteSpace(Model.EmergencyContact) ? "-" : Model.EmergencyContact)</td>
+                        <th>User ID</th>
+                        <td>@Model.UserId</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 18px;">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="bi bi-person-badge"></i>
+                Thong tin tai khoan
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="admin-table">
+                <tbody>
+                    <tr>
+                        <th>Username</th>
+                        <td>@(string.IsNullOrWhiteSpace(Model.Username) ? "-" : Model.Username)</td>
+                        <th>Email tai khoan</th>
+                        <td>@(string.IsNullOrWhiteSpace(Model.UserEmail) ? "-" : Model.UserEmail)</td>
+                    </tr>
+                    <tr>
+                        <th>Ngay tao</th>
+                        <td>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <th>Cap nhat</th>
+                        <td>@Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

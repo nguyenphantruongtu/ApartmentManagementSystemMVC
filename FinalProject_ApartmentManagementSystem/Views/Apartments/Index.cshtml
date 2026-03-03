@@ -1,0 +1,96 @@
+@model FinalProject_ApartmentManagementSystem.ViewModels.ApartmentsIndexViewModel
+@{
+    ViewData["Title"] = "Quan ly can ho";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/admin-roles.css" asp-append-version="true" />
+}
+
+<div class="admin-page">
+    <div class="admin-header">
+        <div>
+            <div class="admin-title">Quan ly can ho</div>
+            <div class="admin-subtitle">Danh sach va thao tac CRUD can ho.</div>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Create" class="btn-ams btn-ams-primary">
+                <i class="bi bi-plus-circle"></i> Tao can ho
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ApartmentSuccess"] is string message && !string.IsNullOrWhiteSpace(message))
+    {
+        <div class="alert-ams">@message</div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="bi bi-building"></i>
+                Danh sach can ho
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model.Apartments.Count == 0)
+            {
+                <div class="admin-subtitle">Chua co can ho nao. Hay tao can ho dau tien.</div>
+            }
+            else
+            {
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Ma can ho</th>
+                            <th>Toa nha</th>
+                            <th>Tang</th>
+                            <th>So phong</th>
+                            <th>Dien tich</th>
+                            <th>Trang thai</th>
+                            <th>Cu dan</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var apartment in Model.Apartments)
+                        {
+                            <tr>
+                                <td>@apartment.ApartmentCode</td>
+                                <td>@apartment.BuildingName</td>
+                                <td>@apartment.Floor</td>
+                                <td>@apartment.NumberOfRooms</td>
+                                <td>@(apartment.Area?.ToString("0.##") ?? "-")</td>
+                                <td>@apartment.Status</td>
+                                <td>@apartment.ActiveResidentCount</td>
+                                <td>
+                                    <div class="admin-actions">
+                                        <a asp-action="Details" asp-route-id="@apartment.Id" class="btn-ams btn-ams-outline">
+                                            <i class="bi bi-eye"></i> Chi tiet
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@apartment.Id" class="btn-ams btn-ams-outline">
+                                            <i class="bi bi-pencil"></i> Sua
+                                        </a>
+                                        <a asp-action="AssignResident" asp-route-id="@apartment.Id" class="btn-ams btn-ams-outline">
+                                            <i class="bi bi-person-plus"></i> Gan cu dan
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@apartment.Id" method="post" onsubmit="return confirm('Xoa can ho nay?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn-ams btn-ams-danger">
+                                                <i class="bi bi-trash"></i> Xoa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

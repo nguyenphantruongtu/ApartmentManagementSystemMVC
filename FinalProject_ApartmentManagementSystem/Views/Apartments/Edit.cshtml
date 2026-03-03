@@ -1,0 +1,103 @@
+@model FinalProject_ApartmentManagementSystem.ViewModels.ApartmentFormViewModel
+@{
+    ViewData["Title"] = "Cap nhat can ho";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/admin-roles.css" asp-append-version="true" />
+}
+
+<div class="admin-page">
+    <div class="admin-header">
+        <div>
+            <div class="admin-title">Cap nhat can ho</div>
+            <div class="admin-subtitle">Chinh sua thong tin can ho hien co.</div>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Index" class="btn-ams btn-ams-outline">
+                <i class="bi bi-arrow-left"></i> Quay lai
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="bi bi-pencil"></i>
+                Thong tin can ho
+            </div>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="form-grid">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <div>
+                    <label class="form-label">Ma can ho</label>
+                    <input asp-for="ApartmentCode" class="form-input" />
+                    <span asp-validation-for="ApartmentCode" class="text-danger"></span>
+                </div>
+                <div>
+                    <label class="form-label">Toa nha</label>
+                    <select asp-for="BuildingId" class="form-input">
+                        <option value="">-- Chon toa nha --</option>
+                        @foreach (var building in Model.BuildingOptions)
+                        {
+                            <option value="@building.BuildingId">@building.BuildingName</option>
+                        }
+                    </select>
+                    <span asp-validation-for="BuildingId" class="text-danger"></span>
+                </div>
+                <div>
+                    <label class="form-label">Tang</label>
+                    <input asp-for="Floor" class="form-input" />
+                    <span asp-validation-for="Floor" class="text-danger"></span>
+                </div>
+                <div>
+                    <label class="form-label">Dien tich (m2)</label>
+                    <input asp-for="Area" class="form-input" />
+                    <span asp-validation-for="Area" class="text-danger"></span>
+                </div>
+                <div>
+                    <label class="form-label">So phong</label>
+                    <input asp-for="NumberOfRooms" class="form-input" />
+                    <span asp-validation-for="NumberOfRooms" class="text-danger"></span>
+                </div>
+                <div>
+                    <label class="form-label">Loai can ho</label>
+                    <input asp-for="ApartmentType" class="form-input" />
+                    <span asp-validation-for="ApartmentType" class="text-danger"></span>
+                </div>
+                <div>
+                    <label class="form-label">Trang thai</label>
+                    <select asp-for="Status" class="form-input">
+                        <option value="">-- Chon trang thai --</option>
+                        @foreach (var status in Model.StatusOptions)
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+                <div>
+                    <label class="form-label">Mo ta</label>
+                    <input asp-for="Description" class="form-input" />
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+                <div class="admin-actions">
+                    <button type="submit" class="btn-ams btn-ams-primary">
+                        <i class="bi bi-check-circle"></i> Luu
+                    </button>
+                    <a asp-action="Index" class="btn-ams btn-ams-outline">Huy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

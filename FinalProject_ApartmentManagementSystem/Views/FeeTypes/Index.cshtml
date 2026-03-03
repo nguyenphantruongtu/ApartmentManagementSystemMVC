@@ -1,0 +1,104 @@
+@model FinalProject_ApartmentManagementSystem.ViewModels.FeeTypesIndexViewModel
+@{
+    ViewData["Title"] = "Quan ly loai phi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/admin-roles.css" asp-append-version="true" />
+}
+
+<div class="admin-page">
+    <div class="admin-header">
+        <div>
+            <div class="admin-title">Quan ly loai phi</div>
+            <div class="admin-subtitle">Danh sach va cap nhat cac loai phi dich vu.</div>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Create" class="btn-ams btn-ams-primary">
+                <i class="bi bi-plus-circle"></i> Tao loai phi
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["FeeTypeSuccess"] is string success && !string.IsNullOrWhiteSpace(success))
+    {
+        <div class="alert-ams">@success</div>
+    }
+    @if (TempData["FeeTypeError"] is string error && !string.IsNullOrWhiteSpace(error))
+    {
+        <div class="alert-ams alert-error">@error</div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="bi bi-receipt"></i>
+                Danh sach loai phi
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model.FeeTypes.Count == 0)
+            {
+                <div class="admin-subtitle">Chua co loai phi nao. Hay tao loai phi dau tien.</div>
+            }
+            else
+            {
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Ma phi</th>
+                            <th>Ten phi</th>
+                            <th>Don vi</th>
+                            <th>Don gia</th>
+                            <th>Trang thai</th>
+                            <th>Ngay tao</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var fee in Model.FeeTypes)
+                        {
+                            <tr>
+                                <td>@fee.FeeCode</td>
+                                <td>
+                                    <div>@fee.FeeName</div>
+                                    @if (!string.IsNullOrWhiteSpace(fee.Description))
+                                    {
+                                        <small class="text-muted">@fee.Description</small>
+                                    }
+                                </td>
+                                <td>@(string.IsNullOrWhiteSpace(fee.Unit) ? "-" : fee.Unit)</td>
+                                <td>@fee.UnitPrice.ToString("#,##0")</td>
+                                <td>@(fee.IsActive ? "Dang hoat dong" : "Tam khoa")</td>
+                                <td>@fee.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <div class="admin-actions">
+                                        <a asp-action="Edit" asp-route-id="@fee.Id" class="btn-ams btn-ams-outline">
+                                            <i class="bi bi-pencil"></i> Sua
+                                        </a>
+                                        <form asp-action="ToggleActive" asp-route-id="@fee.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn-ams btn-ams-outline">
+                                                <i class="bi bi-toggle2-on"></i> @(fee.IsActive ? "Khoa" : "Mo")
+                                            </button>
+                                        </form>
+                                        <form asp-action="Delete" asp-route-id="@fee.Id" method="post" onsubmit="return confirm('Xoa loai phi nay?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn-ams btn-ams-danger">
+                                                <i class="bi bi-trash"></i> Xoa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
