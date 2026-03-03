@@ -298,7 +298,8 @@ public partial class AMSDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Resident__3214EC07A3CA6BB0");
 
-            entity.HasIndex(e => e.UserId, "UQ__Resident__1788CC4D12236B2F").IsUnique();
+            // Bỏ IsUnique() ở đây vì đã xử lý bằng filtered index ở DB
+            entity.HasIndex(e => e.UserId, "UQ_Residents_UserId").IsUnique();
 
             entity.HasIndex(e => e.CitizenId, "UQ__Resident__6E49FA0DE65CA61D").IsUnique();
 
@@ -311,8 +312,12 @@ public partial class AMSDbContext : DbContext
             entity.Property(e => e.Phone).HasMaxLength(20);
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(getdate())");
 
-            entity.HasOne(d => d.User).WithOne(p => p.Resident)
-                .HasForeignKey<Resident>(d => d.UserId)
+            // Quan hệ optional: UserId nullable nên dùng HasOne/WithMany thay vì WithOne
+            // Lý do: WithOne enforce 1-1 strict, sẽ lỗi khi UserId = NULL
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.Residents)          // thay WithOne → WithMany
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.SetNull)    // xóa User → set NULL, không xóa Resident
                 .HasConstraintName("FK__Residents__UserI__5BE2A6F2");
         });
 

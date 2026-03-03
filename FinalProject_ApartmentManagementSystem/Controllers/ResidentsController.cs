@@ -28,7 +28,6 @@ public class ResidentsController : Controller
             Residents = residents.Select(r => new ResidentListItemViewModel
             {
                 Id = r.Id,
-                UserId = r.UserId,
                 FullName = r.FullName,
                 DateOfBirth = r.DateOfBirth,
                 Gender = r.Gender,
@@ -121,7 +120,6 @@ public class ResidentsController : Controller
         var model = new ResidentFormViewModel
         {
             Id = resident.Id,
-            UserId = resident.UserId,
             FullName = resident.FullName,
             DateOfBirth = resident.DateOfBirth,
             Gender = resident.Gender,
@@ -189,7 +187,6 @@ public class ResidentsController : Controller
         var model = new ResidentDetailsViewModel
         {
             Id = resident.Id,
-            UserId = resident.UserId,
             FullName = resident.FullName,
             DateOfBirth = resident.DateOfBirth,
             Gender = resident.Gender,
@@ -239,7 +236,7 @@ public class ResidentsController : Controller
     private async Task<List<UserOptionViewModel>> GetAvailableUserOptionsAsync()
     {
         return await _dbContext.Users.AsNoTracking()
-            .Where(u => u.Resident == null)
+            .Where(u => !_dbContext.Residents.Any(r => r.UserId == u.Id))
             .OrderBy(u => u.FullName)
             .Select(u => new UserOptionViewModel
             {

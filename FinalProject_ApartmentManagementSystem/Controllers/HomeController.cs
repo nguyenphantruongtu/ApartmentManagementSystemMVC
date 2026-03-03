@@ -75,7 +75,7 @@ namespace FinalProject_ApartmentManagementSystem.Controllers
 
                 amountDue = await _dbContext.Invoices.AsNoTracking()
                     .Where(i => i.ResidentId == resident.Id)
-                    .SumAsync(i => (decimal?)Math.Max(0, i.TotalAmount - i.PaidAmount)) ?? 0;
+                    .SumAsync(i => (decimal?)(i.TotalAmount > i.PaidAmount ? i.TotalAmount - i.PaidAmount : 0)) ?? 0;
             }
 
             var unreadCount = 0;

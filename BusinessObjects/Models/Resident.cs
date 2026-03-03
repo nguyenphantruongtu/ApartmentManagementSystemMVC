@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace BusinessObjects.Models;
+﻿using BusinessObjects.Models;
 
 public partial class Resident
 {
     public int Id { get; set; }
 
-    public int UserId { get; set; }
+    // Nullable: NULL = cư dân phụ không có tài khoản
+    public int? UserId { get; set; }
 
     public string FullName { get; set; } = null!;
 
@@ -31,5 +29,6 @@ public partial class Resident
 
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 
-    public virtual User User { get; set; } = null!;
+    // Nullable vì UserId có thể NULL
+    public virtual User? User { get; set; }
 }
